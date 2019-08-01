@@ -1,16 +1,16 @@
 import cv2
 import numpy as np
 import math
-
-video = cv2.VideoCapture("lastYearR.mp4")
+                                                                                                                                                                                                                                                                   
+video = cv2.VideoCapture("buoyOfficial.mp4")
 #video = cv2.VideoCapture("gateB.mp4")
 #video = cv2.VideoCapture(0)
-
+i = 0
 # Downscale the image to a reasonable size to reduce compute
-scale = 0.5
+scale = 1
 
 # Minimize false detects by eliminating contours less than a percentage of the image
-area_threshold = 0.2
+area_threshold = 0.1
 
 ret, orig_frame = video.read()
 width = orig_frame.shape[0]
@@ -21,14 +21,22 @@ while (True):
   ret, orig_frame = video.read()
   if not ret:
     break
+  print(i)
+  i = i+1
 
   orig_frame = cv2.resize(orig_frame, dim, interpolation = cv2.INTER_AREA)
   frame = cv2.GaussianBlur(orig_frame, (5, 5), 0)
+  #frame = cv2.convertScaleAbs(frame, frame, 2.0, 60)
   hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
   
-  mask = cv2.inRange(hsv,(0, 0, 200), (180, 180, 255) )
+  mask = cv2.inRange(hsv,(0, 0, 176.5), (180, 255, 225))
+  #mask1 = cv2.inRange(hsv, (), (90, ))
+  '''mask0 = cv2.inRange(hsv, (0, 0, 0), (0, 0, 79))
+  mask1 = cv2.inRange(hsv, (180, 255, 150), (255, 255, 255))
+  mask = mask0 + mask1'''
 
-  #cv2.imshow('Mask', mask)
+  cv2.imshow('Mask', mask)
+  #cv2.waitKey(0)
 
   ret, thresh = cv2.threshold(mask, 127, 255,0)
     #Erosions and dilations
@@ -44,7 +52,7 @@ while (True):
   cnts = sorted(cnts, key = cv2.contourArea, reverse = True)[:1]
 
   boundingBoxes = np.empty((0, 4), float)
-  if len(cnts) > 0:
+  if len(cnts) > 0: 
     cnt = cnts[0]
     area = cv2.contourArea(cnt)
     if area/(dim[0]*dim[1]) > area_threshold:
@@ -65,7 +73,6 @@ while (True):
 
         #boundingBoxes = np.append(boundingBoxes, np.array([[x,y,x+w,y+h]]), axis = 0)
         #cv2.rectangle(orig_frame,(x,y), (x+w, y+h), (255,0,0), 2)
-        cv2.imshow("bounding rectangle",orig_frame)
 
         #print(str(x/width) + " " + str(y/height) + " " + str((x+w)/width) + " " +  str((y+h)/height))
 
@@ -79,6 +86,9 @@ while (True):
 
       print(cX/width, cY/height)'''
   print("=========================================")
+
+  
+  cv2.imshow("bounding rectangle",orig_frame)
 
   key = cv2.waitKey(1)
   if key == 27:
